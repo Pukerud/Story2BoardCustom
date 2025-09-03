@@ -72,7 +72,7 @@ class Story2BoardPipeline(FluxPipeline):
 
         latents = self.prepare_latents(
             batch_size * num_images_per_prompt,
-            self.transformer.config.in_channels,
+            self.vae.config.latent_channels,
             height,
             width,
             final_prompt_embeds.dtype,
