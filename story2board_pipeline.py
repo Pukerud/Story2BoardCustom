@@ -67,15 +67,13 @@ class Story2BoardPipeline(FluxPipeline):
             prompt_embeds = torch.cat([negative_prompt_embeds, prompt_embeds])
             pooled_prompt_embeds = torch.cat([negative_pooled_prompt_embeds, pooled_prompt_embeds])
         
-        pooled_prompt_embeds = pooled_prompt_embeds.unsqueeze(1).expand(-1, prompt_embeds.shape[1], -1)
-        final_prompt_embeds = torch.cat([pooled_prompt_embeds, prompt_embeds], dim=-1)
 
         latents = self.prepare_latents(
             batch_size * num_images_per_prompt,
             self.vae.config.latent_channels,
             height,
             width,
-            final_prompt_embeds.dtype,
+            prompt_embeds.dtype,
             device,
             generator,
             latents,
@@ -97,7 +95,10 @@ class Story2BoardPipeline(FluxPipeline):
                     )
                 ):
                     noise_pred = self.transformer(
-                        latent_model_input, timestep=t, encoder_hidden_states=final_prompt_embeds
+                        latent_model_input,
+                        timestep=t,
+                        encoder_hidden_states=prompt_embeds,
+                        pooled_projections=pooled_prompt_embeds,
                     ).sample
 
                 if do_classifier_free_guidance:
